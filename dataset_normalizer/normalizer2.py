@@ -17,6 +17,8 @@ for c in ['age', 'balance', 'duration', 'pdays', 'campaign', 'previous']:
 cols_at_end = ['y']
 data = data[[c for c in data if c not in cols_at_end] + [c for c in cols_at_end if c in data]]
 
+data = data.rename(index=str, columns={"job_admin.": "job_admin"})
+
 data.to_csv('normalized2.csv', sep=',', index=False)
 
 
