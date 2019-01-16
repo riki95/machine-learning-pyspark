@@ -42,10 +42,10 @@ fraction = 0.1  # Default 0.6, this increase the storage memory cap
 # In[3]:
 
 
-conf = SparkConf().setAppName("HPC PySpark App").setMaster(master_threads).set('spark.driver.cores', cores).set('spark.memory.fraction', fraction)
+conf = SparkConf().setAppName("HPC PySpark App").set('spark.driver.cores', cores).set('spark.memory.fraction', fraction)
 
 SparkContext.setSystemProperty('spark.executor.memory', memory)
-sc = SparkContext('local', conf=conf)
+sc = SparkContext('local[*]', conf=conf)
 spark = SparkSession(sc)
 
 # print(sc._conf.getAll())
