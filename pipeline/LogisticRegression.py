@@ -29,12 +29,12 @@ from pyspark.sql.session import SparkSession
 # In[2]:
 
 
-master_threads = "local[1]"  # Local
+master_threads = "local[4]"  # Local
 # master_threads = "local[10]"  # Distributed
 
 memory = '8g'
 cores = 4
-fraction = 0.6  # Default 0.6, this increase the storage memory cap
+fraction = 0.1  # Default 0.6, this increase the storage memory cap
 
 
 # ### PySpark session initialization
@@ -195,8 +195,4 @@ metrics = spark.createDataFrame([
 metrics.show()
 
 
-# In[ ]:
-
-
-
-
+input("waiting")
