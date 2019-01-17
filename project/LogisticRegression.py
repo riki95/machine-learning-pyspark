@@ -103,6 +103,7 @@ fn = float(predicted.filter("prediction == 0.0 AND trueLabel == 1").count())
 precision = tp / (tp + fp)
 recall = tp / (tp + fn)
 correctly_classified = (tp+tn) / predicted.count()
+F1 = 2 * (precision * recall) / (precision + recall)
 
 metrics = spark.createDataFrame([
 					("TP", tp),
@@ -111,7 +112,8 @@ metrics = spark.createDataFrame([
 					("FN", fn),
 					("Precision", precision),
 					("Recall", recall),
-					("Correctly Classified", correctly_classified)
+					("Correctly Classified", correctly_classified),
+                    ("F1", F1)
 				],
 				["metric", "value"])
 

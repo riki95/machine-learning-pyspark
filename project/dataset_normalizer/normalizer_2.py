@@ -19,6 +19,15 @@ data = data[[c for c in data if c not in cols_at_end] + [c for c in cols_at_end 
 
 data = data.rename(index=str, columns={"job_admin.": "job_admin"})
 
-data.to_csv('normalized2.csv', sep=',', index=False)
+# data['weight'] = data['y']
+#
+# for index, row in data.iterrows():
+#     print(index)
+#     if (row['y'][index] == 0):
+#         row['weight'][index] = 0.883015
+#     else:
+#         row['weight'][index] = 1.1
+
+# data.to_csv('normalized2.csv', sep=',', index=False)
 
 
