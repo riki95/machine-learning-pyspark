@@ -63,16 +63,17 @@ pipeline = Pipeline(stages=[assembler, algorithm])
 
 
 ### Tune Parameters
-lr_reg_params = [0.1, 1, 10]
-lr_max_iter = [100,10,5]
+lr_reg_params = [0.01, 0.5, 2.0]
+lr_elasticnet_param = [0.0, 0.5, 1.0]
+lr_max_iter = [1,5,10]
 
 
 ### CrossValidation
-folds = 10
+folds = 5
 parallelism = 10
 
 evaluator=BinaryClassificationEvaluator()
-paramGrid = ParamGridBuilder().addGrid(algorithm.regParam, lr_reg_params).addGrid(algorithm.maxIter, lr_max_iter).build()
+paramGrid = ParamGridBuilder().addGrid(algorithm.regParam, lr_reg_params).addGrid(algorithm.maxIter, lr_max_iter).addGrid(algorithm.elasticNetParam, lr_elasticnet_param).build()
 
 cv = CrossValidator(estimator=pipeline, evaluator=evaluator, estimatorParamMaps=paramGrid, numFolds=folds).setParallelism(parallelism)
 
