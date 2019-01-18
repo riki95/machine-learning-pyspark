@@ -11,13 +11,12 @@ from pyspark.sql.functions import *
 from pyspark.sql.session import SparkSession
 
 from pyspark.ml import Pipeline
-from pyspark.ml.classification import DecisionTreeClassifier
+from pyspark.ml.classification import LogisticRegression
 from pyspark.ml.feature import VectorAssembler
 from pyspark.ml.tuning import ParamGridBuilder, CrossValidator, TrainValidationSplit
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
 
 from pyspark.context import SparkContext, SparkConf
-import numpy as np
 
 
 # ### Configure Spark
@@ -30,7 +29,7 @@ storage_memory_cap = 1   # Default 0.6, this increase the storage memory cap
 
 
 ### PySpark session initialization
-conf = SparkConf().setAppName(app_name).setMaster(master_thread).set('spark.driver.cores', cores).set('spark.memory.fraction', storage_memory_cap)
+conf = SparkConf().setAppName(app_name).set('spark.driver.cores', cores).set('spark.memory.fraction', storage_memory_cap)
 SparkContext.setSystemProperty('spark.executor.memory', memory)
 
 sc = SparkContext(cores_number, conf=conf)
@@ -39,7 +38,7 @@ spark = SparkSession(sc)
 
 
 ### Load the source data
-csv = spark.read.csv('bank.csv', inferSchema=True, header=True, sep=',')
+csv = spark.read.csv('gs://dataproc-bb70e0c8-ee03-4734-9189-217a3d31dc2f-europe-west1/bank.csv', inferSchema=True, header=True, sep=',')
 
 
 ### Select features and label
@@ -58,14 +57,14 @@ assembler = VectorAssembler(inputCols = data.columns[:-1], outputCol="features")
 print("Input Columns: ", assembler.getInputCols())
 print("Output Column: ", assembler.getOutputCol())
 
-algorithm = DecisionTreeClassifier(labelCol="label", featuresCol="features")
+algorithm = LogisticRegression(labelCol="label", featuresCol="features")
 pipeline = Pipeline(stages=[assembler, algorithm])
-# print(algorithm.explainParams())  # Explain LogisticRegression parameters
+# print(lr.explainParams())  # Explain LogisticRegression parameters
 
 
 ### Tune Parameters
-maxBins = [int(x) for x in np.linspace(2,20,4)]
-maxDepth = [int(x) for x in np.linspace(1,30,4)]
+lr_reg_params = [0.1, 1, 10]
+lr_max_iter = [100,10,5]
 
 
 ### CrossValidation
@@ -73,7 +72,7 @@ folds = 10
 parallelism = 10
 
 evaluator=BinaryClassificationEvaluator()
-paramGrid = ParamGridBuilder().addGrid(algorithm.maxBins, maxBins).addGrid(algorithm.maxDepth, maxDepth).build()
+paramGrid = ParamGridBuilder().addGrid(algorithm.regParam, lr_reg_params).addGrid(algorithm.maxIter, lr_max_iter).build()
 
 cv = CrossValidator(estimator=pipeline, evaluator=evaluator, estimatorParamMaps=paramGrid, numFolds=folds).setParallelism(parallelism)
 

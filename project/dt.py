@@ -11,12 +11,13 @@ from pyspark.sql.functions import *
 from pyspark.sql.session import SparkSession
 
 from pyspark.ml import Pipeline
-from pyspark.ml.classification import LogisticRegression
+from pyspark.ml.classification import DecisionTreeClassifier
 from pyspark.ml.feature import VectorAssembler
 from pyspark.ml.tuning import ParamGridBuilder, CrossValidator, TrainValidationSplit
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
 
 from pyspark.context import SparkContext, SparkConf
+import numpy as np
 
 
 # ### Configure Spark
@@ -57,14 +58,14 @@ assembler = VectorAssembler(inputCols = data.columns[:-1], outputCol="features")
 print("Input Columns: ", assembler.getInputCols())
 print("Output Column: ", assembler.getOutputCol())
 
-algorithm = LogisticRegression(labelCol="label", featuresCol="features")
+algorithm = DecisionTreeClassifier(labelCol="label", featuresCol="features")
 pipeline = Pipeline(stages=[assembler, algorithm])
-# print(lr.explainParams())  # Explain LogisticRegression parameters
+# print(algorithm.explainParams())  # Explain LogisticRegression parameters
 
 
 ### Tune Parameters
-lr_reg_params = [0.1, 1, 10]
-lr_max_iter = [100,10,5]
+maxBins = [int(x) for x in np.linspace(2,4,2)]
+maxDepth = [int(x) for x in np.linspace(1,5,2)]
 
 
 ### CrossValidation
@@ -72,7 +73,7 @@ folds = 10
 parallelism = 10
 
 evaluator=BinaryClassificationEvaluator()
-paramGrid = ParamGridBuilder().addGrid(algorithm.regParam, lr_reg_params).addGrid(algorithm.maxIter, lr_max_iter).build()
+paramGrid = ParamGridBuilder().addGrid(algorithm.maxBins, maxBins).addGrid(algorithm.maxDepth, maxDepth).build()
 
 cv = CrossValidator(estimator=pipeline, evaluator=evaluator, estimatorParamMaps=paramGrid, numFolds=folds).setParallelism(parallelism)
 
@@ -122,4 +123,4 @@ metrics.show()
 
 
 ### Keep the PySpark Dahboard opened
-# input("Task completed. Close it with CTRL+C.")
+input("Task completed. Close it with CTRL+C.")

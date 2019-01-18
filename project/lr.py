@@ -11,13 +11,12 @@ from pyspark.sql.functions import *
 from pyspark.sql.session import SparkSession
 
 from pyspark.ml import Pipeline
-from pyspark.ml.classification import MultilayerPerceptronClassifier
+from pyspark.ml.classification import LogisticRegression
 from pyspark.ml.feature import VectorAssembler
 from pyspark.ml.tuning import ParamGridBuilder, CrossValidator, TrainValidationSplit
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
 
 from pyspark.context import SparkContext, SparkConf
-import numpy as np
 
 
 # ### Configure Spark
@@ -30,7 +29,7 @@ storage_memory_cap = 1   # Default 0.6, this increase the storage memory cap
 
 
 ### PySpark session initialization
-conf = SparkConf().setAppName(app_name).setMaster(master_thread).set('spark.driver.cores', cores).set('spark.memory.fraction', storage_memory_cap)
+conf = SparkConf().setAppName(app_name).set('spark.driver.cores', cores).set('spark.memory.fraction', storage_memory_cap)
 SparkContext.setSystemProperty('spark.executor.memory', memory)
 
 sc = SparkContext(cores_number, conf=conf)
@@ -43,14 +42,14 @@ csv = spark.read.csv('bank.csv', inferSchema=True, header=True, sep=',')
 
 
 ### Select features and label
-data = csv.select(*(csv.columns[:-1]+ [((col("y")).cast("Int").alias("features"))]))
+data = csv.select(*(csv.columns[:-1]+ [((col("y")).cast("Int").alias("label"))]))
 # print(data)
 
 
 ### Split the data and rename Y column
 splits = data.randomSplit([0.7, 0.3])
 train = splits[0]
-test = splits[1].withColumnRenamed("features", "trueLabel")
+test = splits[1].withColumnRenamed("label", "trueLabel")
 
 
 ### Define the pipeline
@@ -58,16 +57,31 @@ assembler = VectorAssembler(inputCols = data.columns[:-1], outputCol="features")
 print("Input Columns: ", assembler.getInputCols())
 print("Output Column: ", assembler.getOutputCol())
 
-layers = [4,5,4,3]
+algorithm = LogisticRegression(labelCol="label", featuresCol="features")
+pipeline = Pipeline(stages=[assembler, algorithm])
+# print(lr.explainParams())  # Explain LogisticRegression parameters
 
-algorithm = MultilayerPerceptronClassifier(maxIter=100, layers=layers, blockSize=128, seed=1234)
-# print(algorithm.explainParams())  # Explain LogisticRegression parameters
+
+### Tune Parameters
+lr_reg_params = [0.1, 1, 10]
+lr_max_iter = [100,10,5]
+
+
+### CrossValidation
+folds = 10
+parallelism = 10
+
+evaluator=BinaryClassificationEvaluator()
+paramGrid = ParamGridBuilder().addGrid(algorithm.regParam, lr_reg_params).addGrid(algorithm.maxIter, lr_max_iter).build()
+
+cv = CrossValidator(estimator=pipeline, evaluator=evaluator, estimatorParamMaps=paramGrid, numFolds=folds).setParallelism(parallelism)
+
 
 #### Training
 import time
 tic = time.time()
 
-model = algorithm.fit(train)
+model = cv.fit(train)
 
 toc = time.time()
 print("Elapsed time ", toc-tic)
