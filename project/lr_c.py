@@ -21,18 +21,19 @@ from pyspark.context import SparkContext, SparkConf
 
 # ### Configure Spark
 app_name = 'HPC Project'
-cores_number = 'local[*]'  # 'local' for local and 'local[*] or local[n] for the number of cores to use'
-master_thread = ''
-cores = 4
-memory = '8g'
-storage_memory_cap = 1   # Default 0.6, this increase the storage memory cap
+# cores_number = 'local[*]'  # 'local' for local and 'local[*] or local[n] for the number of cores to use'
+# master_thread = ''
+# cores = 4
+# memory = '8g'
+# storage_memory_cap = 1   # Default 0.6, this increase the storage memory cap
 
 
 ### PySpark session initialization
-conf = SparkConf().setAppName(app_name).set('spark.driver.cores', cores).set('spark.memory.fraction', storage_memory_cap)
-SparkContext.setSystemProperty('spark.executor.memory', memory)
+conf = SparkConf().setAppName(app_name)
+# .set('spark.driver.cores', cores).set('spark.memory.fraction', storage_memory_cap)
+# SparkContext.setSystemProperty('spark.executor.memory', memory)
 
-sc = SparkContext(cores_number, conf=conf)
+sc = SparkContext(conf=conf)
 spark = SparkSession(sc)
 # print(sc._conf.getAll())  # Get all the configuration parameters info
 
