@@ -34,7 +34,7 @@ __all__ = ['DagCrossValidator', 'DagPipeline']
 
 
 def get_param_map_str(param_map):
-    return str({p.name: v for p, v in param_map.iteritems()})
+    return str({p.name: v for p, v in param_map.items()})
 
 
 class DagPipeline(Pipeline, HasParallelism):
@@ -131,14 +131,14 @@ class DagPipeline(Pipeline, HasParallelism):
             # Separate ParamMaps for the stage
             temp_map = {}
             for param_map in paramMaps:
-                for k, v in param_map.iteritems():
+                for k, v in param_map.items():
                     if k.parent == stage.uid:
                         temp_map.setdefault(k, set()).add(v)
 
             # Check if have a param grid for this stage
             if temp_map:
                 grid_builder = ParamGridBuilder()
-                for k, v in temp_map.iteritems():
+                for k, v in temp_map.items():
                     grid_builder.addGrid(k, v)
                 stage_param_grid = grid_builder.build()
                 new_nodes = [Node(stage, param_map) for param_map in stage_param_grid]

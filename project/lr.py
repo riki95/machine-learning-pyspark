@@ -17,6 +17,7 @@ from pyspark.ml.tuning import ParamGridBuilder, CrossValidator, TrainValidationS
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
 
 from pyspark.context import SparkContext, SparkConf
+from pipeline_tuning import DagCrossValidator
 
 
 # ### Configure Spark
@@ -70,12 +71,14 @@ lr_max_iter = [1,5,10]
 
 ### CrossValidation
 folds = 5
-parallelism = 10
+parallelism = 2
 
 evaluator=BinaryClassificationEvaluator()
 paramGrid = ParamGridBuilder().addGrid(algorithm.regParam, lr_reg_params).addGrid(algorithm.maxIter, lr_max_iter).addGrid(algorithm.elasticNetParam, lr_elasticnet_param).build()
 
-cv = CrossValidator(estimator=pipeline, evaluator=evaluator, estimatorParamMaps=paramGrid, numFolds=folds).setParallelism(parallelism)
+#cv = CrossValidator(estimator=pipeline, evaluator=evaluator, estimatorParamMaps=paramGrid, numFolds=folds).setParallelism(parallelism)
+
+cv = DagCrossValidator(estimator=pipeline, estimatorParamMaps=paramGrid, evaluator=evaluator, parallelism=parallelism)
 
 
 #### Training
