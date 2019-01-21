@@ -22,36 +22,22 @@ import numpy as np
 
 # ### Configure Spark
 app_name = 'HPC Project'
-cores_number = 'local[*]'  # 'local' for local and 'local[*] or local[n] for the number of cores to use'
-master_thread = ''
-cores = 4
-memory = '8g'
-storage_memory_cap = 1   # Default 0.6, this increase the storage memory cap
-
 
 ### PySpark session initialization
-conf = SparkConf().setAppName(app_name).setMaster(master_thread).set('spark.driver.cores', cores).set('spark.memory.fraction', storage_memory_cap)
-SparkContext.setSystemProperty('spark.executor.memory', memory)
-
-sc = SparkContext(cores_number, conf=conf)
+conf = SparkConf().setAppName(app_name)
+sc = SparkContext(conf=conf)
 spark = SparkSession(sc)
-# print(sc._conf.getAll())  # Get all the configuration parameters info
-
 
 ### Load the source data
 csv = spark.read.csv('bank.csv', inferSchema=True, header=True, sep=',')
 
-
 ### Select features and label
 data = csv.select(*(csv.columns[:-1]+ [((col("y")).cast("Int").alias("label"))]))
-# print(data)
-
 
 ### Split the data and rename Y column
 splits = data.randomSplit([0.7, 0.3])
 train = splits[0]
 test = splits[1].withColumnRenamed("label", "trueLabel")
-
 
 ### Define the pipeline
 assembler = VectorAssembler(inputCols = data.columns[:-1], outputCol="features")
@@ -60,23 +46,19 @@ print("Output Column: ", assembler.getOutputCol())
 
 algorithm = DecisionTreeClassifier(labelCol="label", featuresCol="features")
 pipeline = Pipeline(stages=[assembler, algorithm])
-# print(algorithm.explainParams())  # Explain LogisticRegression parameters
-
 
 ### Tune Parameters
 maxBins = [int(x) for x in np.linspace(2,4,2)]
 maxDepth = [int(x) for x in np.linspace(1,5,2)]
 
-
 ### CrossValidation
-folds = 10
-parallelism = 10
+folds = 5
+parallelism = 9
 
 evaluator=BinaryClassificationEvaluator()
 paramGrid = ParamGridBuilder().addGrid(algorithm.maxBins, maxBins).addGrid(algorithm.maxDepth, maxDepth).build()
 
 cv = CrossValidator(estimator=pipeline, evaluator=evaluator, estimatorParamMaps=paramGrid, numFolds=folds).setParallelism(parallelism)
-
 
 #### Training
 import time
@@ -87,14 +69,12 @@ model = cv.fit(train)
 toc = time.time()
 print("Elapsed time ", toc-tic)
 
-
 ### Test the Model
 prediction = model.transform(test)
 predicted = prediction.select("features", "prediction", "probability", "trueLabel")
 # print(*predicted.select('prediction', 'trueLabel').collect(), sep='\n')
 print('true positives:', predicted.filter('trueLabel == 1').count())
 print('true negatives:', predicted.filter('trueLabel == 0').count())
-
 
 ### Compute Confusion Matrix Metrics
 tp = float(predicted.filter("prediction == 1.0 AND trueLabel == 1").count())
@@ -120,7 +100,6 @@ metrics = spark.createDataFrame([
 
 ### Print Results
 metrics.show()
-
 
 ### Keep the PySpark Dahboard opened
 input("Task completed. Close it with CTRL+C.")

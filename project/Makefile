@@ -1,5 +1,6 @@
 SCRIPT=lr.py
 SCRIPTCLEAN=lr_clean.py
+SCRIPTD3=dt.py
 LINT=--conf spark.extraListeners=com.groupon.sparklint.SparklintListener --packages com.groupon.sparklint:sparklint-spark201_2.11:1.0.8
 OPT=
 URL_MASTER=spark://MacBook-Air-di-Riccardo.local:7077
@@ -14,6 +15,8 @@ lint:
 1core: 
 	spark-submit --master local $(LINT) $(SCRIPTCLEAN)
 
+dtree:
+	spark-submit $(LINT) $(SCRIPTD3)
 
 start_master:
 	/spark/sbin/start-master.sh
