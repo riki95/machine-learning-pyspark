@@ -63,7 +63,7 @@ lr_max_iter = [1,5,10]
 
 ### CrossValidation
 folds = 5
-parallelism = 2
+parallelism = 9
 
 evaluator=BinaryClassificationEvaluator()
 paramGrid = ParamGridBuilder().addGrid(algorithm.regParam, lr_reg_params).addGrid(algorithm.maxIter, lr_max_iter).addGrid(algorithm.elasticNetParam, lr_elasticnet_param).build()
@@ -118,4 +118,4 @@ metrics.show()
 
 
 ### Keep the PySpark Dahboard opened
-# input("Task completed. Close it with CTRL+C.")
+input("Task completed. Close it with CTRL+C.")
