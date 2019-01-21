@@ -22,18 +22,17 @@ from pipeline_tuning import DagCrossValidator
 
 # ### Configure Spark
 app_name = 'HPC Project'
-cores_number = 'local[*]'
 
 ### PySpark session initialization
 conf = SparkConf().setAppName(app_name)
 
-sc = SparkContext(cores_number, conf=conf)
+sc = SparkContext(conf=conf)
 spark = SparkSession(sc)
 # print(sc._conf.getAll())  # Get all the configuration parameters info
 
 
 ### Load the source data
-csv = spark.read.csv('bank.csv', inferSchema=True, header=True, sep=',')
+csv = spark.read.csv('/Users/riccardo/Documents/Github/machine-learning-pyspark/project/bank.csv', inferSchema=True, header=True, sep=',')
 
 
 ### Select features and label
