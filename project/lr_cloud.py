@@ -22,24 +22,17 @@ from pipeline_tuning import DagCrossValidator
 
 # ### Configure Spark
 app_name = 'HPC Project'
-cores_number = 'local[*]'  # 'local' for local and 'local[*] or local[n] for the number of cores to use'
-master_thread = ''
-cores = 4
-memory = '8g'
-storage_memory_cap = 1   # Default 0.6, this increase the storage memory cap
-
 
 ### PySpark session initialization
-conf = SparkConf().setAppName(app_name).set('spark.driver.cores', cores).set('spark.memory.fraction', storage_memory_cap)
-SparkContext.setSystemProperty('spark.executor.memory', memory)
+conf = SparkConf().setAppName(app_name)
 
-sc = SparkContext(cores_number, conf=conf)
+sc = SparkContext(conf=conf)
 spark = SparkSession(sc)
 # print(sc._conf.getAll())  # Get all the configuration parameters info
 
 
 ### Load the source data
-csv = spark.read.csv('bank.csv', inferSchema=True, header=True, sep=',')
+csv = spark.read.csv('gs://dataproc-bb70e0c8-ee03-4734-9189-217a3d31dc2f-europe-west1/bank.csv', inferSchema=True, header=True, sep=',')
 
 
 ### Select features and label
@@ -60,7 +53,6 @@ print("Output Column: ", assembler.getOutputCol())
 
 algorithm = LogisticRegression(labelCol="label", featuresCol="features")
 pipeline = Pipeline(stages=[assembler, algorithm])
-# print(lr.explainParams())  # Explain LogisticRegression parameters
 
 
 ### Tune Parameters
@@ -71,14 +63,14 @@ lr_max_iter = [1,5,10]
 
 ### CrossValidation
 folds = 5
-parallelism = 2
+parallelism = 9
 
 evaluator=BinaryClassificationEvaluator()
 paramGrid = ParamGridBuilder().addGrid(algorithm.regParam, lr_reg_params).addGrid(algorithm.maxIter, lr_max_iter).addGrid(algorithm.elasticNetParam, lr_elasticnet_param).build()
 
-#cv = CrossValidator(estimator=pipeline, evaluator=evaluator, estimatorParamMaps=paramGrid, numFolds=folds).setParallelism(parallelism)
+cv = CrossValidator(estimator=pipeline, evaluator=evaluator, estimatorParamMaps=paramGrid, numFolds=folds).setParallelism(parallelism)
 
-cv = DagCrossValidator(estimator=pipeline, estimatorParamMaps=paramGrid, evaluator=evaluator, parallelism=parallelism)
+#cv = DagCrossValidator(estimator=pipeline, estimatorParamMaps=paramGrid, evaluator=evaluator, parallelism=parallelism)
 
 
 #### Training
@@ -126,4 +118,4 @@ metrics.show()
 
 
 ### Keep the PySpark Dahboard opened
-# input("Task completed. Close it with CTRL+C.")
+input("Task completed. Close it with CTRL+C.")
