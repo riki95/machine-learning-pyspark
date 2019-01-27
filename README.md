@@ -1,3 +1,10 @@
-# hpc
+# Machine Learning on the Cloud
 
-hpc project
+
+## Getting Started
+
+
+
+## Author
+
+* **Riccardo Basso** - Università degli studi di Genova - *High Performance Computing 2018-2019*
