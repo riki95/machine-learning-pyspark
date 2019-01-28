@@ -2,8 +2,8 @@ SCRIPT=lr_local.py
 SCRIPTD3=dt.py
 LINT=--conf spark.extraListeners=com.groupon.sparklint.SparklintListener --packages com.groupon.sparklint:sparklint-spark201_2.11:1.0.8
 OPT=
-URL_MASTER=spark://MacBook-Air-di-Riccardo.local:7077
-URL_DAV=spark://130.251.35.81:7077
+URL_MASTER=
+URL_DAV=
 
 script: 
 	spark-submit $(OPT) $(SCRIPT)
@@ -12,7 +12,7 @@ lint:
 	spark-submit $(OPT) $(LINT) $(SCRIPT)
 
 1core: 
-	spark-submit --master local $(LINT) $(SCRIP)
+	spark-submit --master local $(LINT) $(SCRIPT)
 
 dtree:
 	spark-submit $(LINT) $(SCRIPTD3)
