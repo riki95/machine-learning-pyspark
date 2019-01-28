@@ -32,7 +32,7 @@ spark = SparkSession(sc)
 
 
 ### Load the source data
-csv = spark.read.csv('/Users/riccardo/Documents/Github/machine-learning-pyspark/project/bank.csv', inferSchema=True, header=True, sep=',')
+csv = spark.read.csv('/hpc-data/bank_1g.csv', inferSchema=True, header=True, sep=',')
 
 
 ### Select features and label
@@ -62,8 +62,8 @@ lr_max_iter = [1,5,10]
 
 
 ### CrossValidation
-folds = 5
-parallelism = 9
+folds = 2
+parallelism = 3
 
 evaluator=BinaryClassificationEvaluator()
 paramGrid = ParamGridBuilder().addGrid(algorithm.regParam, lr_reg_params).addGrid(algorithm.maxIter, lr_max_iter).addGrid(algorithm.elasticNetParam, lr_elasticnet_param).build()
