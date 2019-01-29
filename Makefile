@@ -1,5 +1,4 @@
-SCRIPT=lr_local.py
-SCRIPTD3=dt.py
+SCRIPT=LogisticRegression_local.py
 LINT=--conf spark.extraListeners=com.groupon.sparklint.SparklintListener --packages com.groupon.sparklint:sparklint-spark201_2.11:1.0.8
 OPT=
 URL_MASTER=
@@ -13,9 +12,6 @@ lint:
 
 1core: 
 	spark-submit --master local $(LINT) $(SCRIPT)
-
-dtree:
-	spark-submit $(LINT) $(SCRIPTD3)
 
 start_master:
 	/spark/sbin/start-master.sh

@@ -17,8 +17,6 @@ from pyspark.ml.tuning import ParamGridBuilder, CrossValidator, TrainValidationS
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
 
 from pyspark.context import SparkContext, SparkConf
-from pipeline_tuning import DagCrossValidator
-
 
 # ### Configure Spark
 app_name = 'HPC Project'
@@ -32,7 +30,7 @@ spark = SparkSession(sc)
 
 
 ### Load the source data
-csv = spark.read.csv('/hpc-data/bank_1g.csv', inferSchema=True, header=True, sep=',')
+csv = spark.read.csv('gs://dataproc-bb70e0c8-ee03-4734-9189-217a3d31dc2f-europe-west1/bank.csv', inferSchema=True, header=True, sep=',')
 
 
 ### Select features and label
@@ -69,8 +67,6 @@ evaluator=BinaryClassificationEvaluator()
 paramGrid = ParamGridBuilder().addGrid(algorithm.regParam, lr_reg_params).addGrid(algorithm.maxIter, lr_max_iter).addGrid(algorithm.elasticNetParam, lr_elasticnet_param).build()
 
 cv = CrossValidator(estimator=pipeline, evaluator=evaluator, estimatorParamMaps=paramGrid, numFolds=folds).setParallelism(parallelism)
-
-#cv = DagCrossValidator(estimator=pipeline, estimatorParamMaps=paramGrid, evaluator=evaluator, parallelism=parallelism)
 
 
 #### Training
